@@ -33,8 +33,6 @@ public class CloverFrame extends JFrame {
 	}
 
 	public void append(final Location aLocation) {
-		mLocationList.add(aLocation);
-
 		JButton button = new JButton(aLocation.getName());
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -44,12 +42,19 @@ public class CloverFrame extends JFrame {
 					return;
 				while (mLocationList.getLast() != aLocation) {
 					mLocationList.removeLast();
+					mLocationPanel.remove(mLocationList.size());
 				}
+				mLocationPanel.revalidate();
+				mLocationPanel.repaint();
 				updateActivePanel();
 			}
 		});
 
-		mLocationPanel.add(button);
+		int buttonIdx = mLocationList.size();
+		mLocationPanel.add(button, buttonIdx);
+		mLocationPanel.revalidate();
+
+		mLocationList.add(aLocation);
 
 		updateActivePanel();
 	}
@@ -61,9 +66,10 @@ public class CloverFrame extends JFrame {
 		}
 		Location location = mLocationList.getLast();
 		if (location != null) {
-			mActivePanel = location.createPanel();
+			mActivePanel = location.createPanel(this);
 			mMainPanel.add(mActivePanel, BorderLayout.CENTER);
 		}
+		mMainPanel.revalidate();
 
 		StringBuffer titleBuffer = new StringBuffer();
 		titleBuffer.append("Clover");
@@ -80,7 +86,7 @@ public class CloverFrame extends JFrame {
 
 		public abstract String getName();
 
-		public abstract JPanel createPanel();
+		public abstract JPanel createPanel(CloverFrame aFrame);
 
 	}
 

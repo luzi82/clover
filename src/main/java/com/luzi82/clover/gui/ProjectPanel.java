@@ -74,7 +74,7 @@ public class ProjectPanel extends JPanel {
 		}
 
 		@Override
-		public JPanel createPanel() {
+		public JPanel createPanel(CloverFrame aFrame) {
 			return new ProjectPanel(mProjectDir);
 		}
 
