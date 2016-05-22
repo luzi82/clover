@@ -1,11 +1,14 @@
 package com.luzi82.clover.runtime;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.luzi82.adb.Adb;
 import com.luzi82.adb.Adb.Device;
+
+import net.engio.mbassy.listener.Handler;
 
 public class DeviceListManager {
 
@@ -31,6 +34,7 @@ public class DeviceListManager {
 		mDeviceListChangeNotifier.start();
 	}
 
+	@Handler
 	public void handle(DeviceListChangeNotifier.DeviceListChanged dlc) {
 		startRefreshDeviceList();
 	}
@@ -79,11 +83,15 @@ public class DeviceListManager {
 		try {
 			deviceList = pCloverRuntime.getAdb().getDeviceList();
 		} catch (IOException e) {
+			e.printStackTrace();
 		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		if (deviceList == null) {
 			deviceList = new LinkedList<Adb.Device>();
 		}
+		Collections.sort(deviceList);
+		System.err.println(String.format("NFSTZTYN deviceList %d", deviceList.size()));
 		synchronized (DeviceListManager.this) {
 			mDeviceList = deviceList;
 		}

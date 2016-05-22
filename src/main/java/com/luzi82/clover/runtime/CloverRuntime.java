@@ -1,6 +1,7 @@
 package com.luzi82.clover.runtime;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.luzi82.adb.Adb;
@@ -32,6 +33,14 @@ public class CloverRuntime {
 		mAdb = new Adb(aAdbFile);
 
 		mDeviceListManager = new DeviceListManager(this);
+	}
+	
+	public void init(){
+		mDeviceListManager.init();
+	}
+
+	public void start() throws IOException{
+		mDeviceListManager.start();
 	}
 
 	public Adb getAdb() {

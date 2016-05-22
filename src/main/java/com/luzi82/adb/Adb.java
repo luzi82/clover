@@ -6,14 +6,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -45,7 +45,7 @@ public class Adb {
 		return m.group(1);
 	}
 
-	static public class Device {
+	static public class Device implements Comparable<Device> {
 		public enum State {
 			OFFLINE("offline"), //
 			DEVICE("device"), //
@@ -73,6 +73,34 @@ public class Adb {
 
 		public String serial_number;
 		public State state;
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Device))
+				return false;
+			Device d = (Device) obj;
+			if (!Objects.equals(this.serial_number, d.serial_number))
+				return false;
+			if (!Objects.equals(this.state, d.state))
+				return false;
+			return true;
+		}
+
+		public int compareTo(Device o) {
+			if (o == null) {
+				return 1;
+			}
+			int ret;
+			ret = ObjectUtils.compare(this.serial_number, o.serial_number);
+			if (ret != 0)
+				return ret;
+			ret = ObjectUtils.compare(this.state, o.state);
+			if (ret != 0)
+				return ret;
+			return 0;
+		}
 	}
 
 	public List<Device> getDeviceList() throws IOException, InterruptedException {
@@ -184,7 +212,7 @@ public class Adb {
 		ProcessRet processRet = process(argv);
 		ProcessToStringRet ret = new ProcessToStringRet();
 		ret.result = processRet.result;
-		ret.string = new String(ret.string);
+		ret.string = new String(processRet.bytes);
 		return ret;
 	}
 
