@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.luzi82.adb.Adb;
+import com.luzi82.common.NioNotifier;
 
 import net.engio.mbassy.bus.MBassador;
 
@@ -11,6 +12,7 @@ public class CloverRuntime {
 
 	private final ScheduledExecutorService mScheduledExecutorService;
 	private final MBassador<Object> mBus;
+	private final NioNotifier mNioNotifier;
 
 	private final Adb mAdb;
 
@@ -20,10 +22,12 @@ public class CloverRuntime {
 	public CloverRuntime( //
 			ScheduledExecutorService aScheduledExecutorService, //
 			MBassador<Object> aBus, //
+			NioNotifier aNioNotifier, //
 			File aAdbFile //
 	) {
 		mScheduledExecutorService = aScheduledExecutorService;
 		mBus = aBus;
+		mNioNotifier = aNioNotifier;
 
 		mAdb = new Adb(aAdbFile);
 
@@ -44,6 +48,10 @@ public class CloverRuntime {
 
 	public DeviceListManager getDeviceListManager() {
 		return mDeviceListManager;
+	}
+
+	public NioNotifier getNioNotifier() {
+		return mNioNotifier;
 	}
 
 	public Workspace getWorkspace() {

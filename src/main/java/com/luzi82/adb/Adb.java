@@ -6,8 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +30,7 @@ public class Adb {
 	}
 
 	public String getVersion() throws IOException, InterruptedException {
-		String stdOut = processToString("version");
+		String stdOut = processToString("version").string;
 		Pattern p = Pattern.compile("Android Debug Bridge version ([^\\n]+)\\n");
 		Matcher m = p.matcher(stdOut);
 		m.find();
@@ -36,7 +38,7 @@ public class Adb {
 	}
 
 	public String getRevision() throws IOException, InterruptedException {
-		String stdOut = processToString("version");
+		String stdOut = processToString("version").string;
 		Pattern p = Pattern.compile("Revision ([^\\n]+)\\n");
 		Matcher m = p.matcher(stdOut);
 		m.find();
@@ -74,7 +76,7 @@ public class Adb {
 	}
 
 	public List<Device> getDeviceList() throws IOException, InterruptedException {
-		String stdOut = processToString("devices");
+		String stdOut = processToString("devices").string;
 
 		BufferedReader reader = new BufferedReader(new StringReader(stdOut));
 		String line = null;
@@ -109,7 +111,7 @@ public class Adb {
 	}
 
 	public byte[] screencap(String deviceId) throws IOException, InterruptedException {
-		byte[] retBa = process("-s", deviceId, "shell", "screencap", "-p");
+		byte[] retBa = process("-s", deviceId, "shell", "screencap", "-p").bytes;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(retBa.length);
 		boolean d = false;
 		for (byte b : retBa) {
@@ -132,43 +134,67 @@ public class Adb {
 		return baos.toByteArray();
 	}
 
-//	public byte[] screencap(String deviceId) throws IOException, InterruptedException {
-//		process("-s", deviceId, "shell", "screencap", "/sdcard/tmp.jpg");
-//		process("-s", deviceId, "pull", "screencap", "/sdcard/tmp.jpg");
-//		process("-s", deviceId, "shell", "rm", "/sdcard/tmp.jpg");
-//		byte[] retBa = FileUtils.readFileToByteArray(new File("tmp.jpg"));
-//		ByteArrayOutputStream baos = new ByteArrayOutputStream(retBa.length);
-//		boolean d = false;
-//		for (byte b : retBa) {
-//			if (b == 0x0a) {
-//				d = false;
-//				baos.write(b);
-//			} else if (b == 0x0d) {
-//				if (d) {
-//					baos.write(0x0d);
-//				}
-//				d = true;
-//			} else {
-//				if (d) {
-//					baos.write(0x0d);
-//					d = false;
-//				}
-//				baos.write(b);
-//			}
-//		}
-//		return baos.toByteArray();
-//	}
-	
+	// public byte[] screencap(String deviceId) throws IOException,
+	// InterruptedException {
+	// process("-s", deviceId, "shell", "screencap", "/sdcard/tmp.jpg");
+	// process("-s", deviceId, "pull", "screencap", "/sdcard/tmp.jpg");
+	// process("-s", deviceId, "shell", "rm", "/sdcard/tmp.jpg");
+	// byte[] retBa = FileUtils.readFileToByteArray(new File("tmp.jpg"));
+	// ByteArrayOutputStream baos = new ByteArrayOutputStream(retBa.length);
+	// boolean d = false;
+	// for (byte b : retBa) {
+	// if (b == 0x0a) {
+	// d = false;
+	// baos.write(b);
+	// } else if (b == 0x0d) {
+	// if (d) {
+	// baos.write(0x0d);
+	// }
+	// d = true;
+	// } else {
+	// if (d) {
+	// baos.write(0x0d);
+	// d = false;
+	// }
+	// baos.write(b);
+	// }
+	// }
+	// return baos.toByteArray();
+	// }
+
 	public void tap(String deviceId, int x, int y) throws IOException, InterruptedException {
 		process("-s", deviceId, "shell", "input", "tap", Integer.toString(x), Integer.toString(y));
 	}
 
-	public String processToString(String... argv) throws IOException, InterruptedException {
-		byte[] retBa = process(argv);
-		return new String(retBa);
+	public String getProp(String deviceId, String key) throws IOException, InterruptedException {
+		ProcessToStringRet processRet = processToString("-s", deviceId, "shell", "getprop", key);
+		if (processRet.result != 0) {
+			return null;
+		}
+		String ret = processRet.string.substring(0, processRet.string.length() - 1);
+		return ret;
 	}
 
-	public byte[] process(String... argv) throws IOException, InterruptedException {
+	public static class ProcessToStringRet {
+		int result;
+		String string;
+	}
+
+	public ProcessToStringRet processToString(String... argv) throws IOException, InterruptedException {
+		ProcessRet processRet = process(argv);
+		ProcessToStringRet ret = new ProcessToStringRet();
+		ret.result = processRet.result;
+		ret.string = new String(ret.string);
+		return ret;
+	}
+
+	public static class ProcessRet {
+		int result;
+		byte[] bytes;
+	}
+
+	public ProcessRet process(String... argv) throws IOException, InterruptedException {
+		ProcessRet ret = new ProcessRet();
 		List<String> cmd = new LinkedList<String>();
 		cmd.add(adbFile.getAbsolutePath());
 		for (String arg : argv) {
@@ -176,10 +202,10 @@ public class Adb {
 		}
 		Process process = Runtime.getRuntime().exec(cmd.toArray(new String[0]));
 		InputStream is = process.getInputStream();
-		byte[] retBa = IOUtils.toByteArray(is);
+		ret.bytes = IOUtils.toByteArray(is);
 		is.close();
-		process.waitFor();
-		return retBa;
+		ret.result = process.waitFor();
+		return ret;
 	}
 
 }

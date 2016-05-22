@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import com.luzi82.clover.runtime.CloverRuntime;
+import com.luzi82.common.NioNotifier;
 
 import net.engio.mbassy.bus.MBassador;
 
@@ -61,12 +62,14 @@ public class MainPanel extends JPanel {
 	public static void main(String[] args) {
 		ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
 		MBassador<Object> bus = new MBassador<Object>();
+		NioNotifier nioNotifier = new NioNotifier();
+		nioNotifier.init(scheduledThreadPoolExecutor);
 		File adbFile = new File("import-dev/android-sdk-linux/platform-tools/adb");
 
-		CloverRuntime cloverRuntime = new CloverRuntime(scheduledThreadPoolExecutor, bus, adbFile);
+		CloverRuntime cloverRuntime = new CloverRuntime(scheduledThreadPoolExecutor, bus, nioNotifier, adbFile);
 
 		CloverFrame mainFrame = new CloverFrame();
-		mainFrame.append(new Location(cloverRuntime));
+		// mainFrame.append(new Location(cloverRuntime));
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		mainFrame.setSize((int) (screenSize.width / CloverFrame.PHI), (int) (screenSize.height / CloverFrame.PHI));
@@ -96,7 +99,8 @@ public class MainPanel extends JPanel {
 		@Override
 		public void onChoose() {
 			// System.err.println("DEDRIWOR DeviceListItem.onChoose");
-			pCloverFrame.append(new DeviceListPanel.Location(pCloverRuntime));
+			// pCloverFrame.append(new
+			// DeviceListPanel.Location(pCloverRuntime));
 		}
 	}
 

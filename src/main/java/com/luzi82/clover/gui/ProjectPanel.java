@@ -52,7 +52,7 @@ public class ProjectPanel extends JPanel {
 		// mainFrame.setVisible(true);
 
 		CloverFrame mainFrame = new CloverFrame();
-		mainFrame.append(new Location(f));
+//		mainFrame.append(new Location(f));
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		mainFrame.setSize((int) (screenSize.width / PHI), (int) (screenSize.height / PHI));
